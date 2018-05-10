@@ -180,6 +180,7 @@ void PointCloud2Nodelet::imageCb(const ImageConstPtr& l_image_msg,
 
   sensor_msgs::PointCloud2Modifier pcd_modifier(*points_msg);
   pcd_modifier.setPointCloud2FieldsByString(2, "xyz", "rgb");
+  //pcd_modifier.setPointCloud2FieldsByString(1, "xyz");
 
   sensor_msgs::PointCloud2Iterator<float> iter_x(*points_msg, "x");
   sensor_msgs::PointCloud2Iterator<float> iter_y(*points_msg, "y");
@@ -189,29 +190,58 @@ void PointCloud2Nodelet::imageCb(const ImageConstPtr& l_image_msg,
   sensor_msgs::PointCloud2Iterator<uint8_t> iter_b(*points_msg, "b");
 
   float bad_point = std::numeric_limits<float>::quiet_NaN ();
-  for (int v = 0; v < mat.rows; ++v)
-  {
-    for (int u = 0; u < mat.cols; ++u, ++iter_x, ++iter_y, ++iter_z)
+
+
+
+    for (int v = 0; v < mat.rows; ++v)
     {
-      if (isValidPoint(mat(v,u)))
-      {
-        // x,y,z
+        for (int u = 0; u < mat.cols; ++u, ++iter_x, ++iter_y, ++iter_z)
+        {
+            if ((isValidPoint(mat(v,u)))&&(!(v%8))&&(!(u%8)))
+            {
+                *iter_x = mat(v, u)[2];
+                *iter_y = -mat(v, u)[0];
+                *iter_z = -mat(v, u)[1];
+            }
+            else
+            {
+                *iter_x = *iter_y = *iter_z = bad_point;
+            }
+        }
+    }
+
+  //ROS_INFO("USS: In converter rows %d, cols %d", mat.rows, mat.cols);
+  //long int bad_cnt=0;
+//  for (int v = 0; v < mat.rows; ++v)
+//  {
+//    for (int u = 0; u < mat.cols; ++u, ++iter_x, ++iter_y, ++iter_z)
+//    {
+//      if (isValidPoint(mat(v,u)))
+//      {
+//        // x,y,z
+//        /*
 //        *iter_x = mat(v, u)[0];
 //        *iter_y = mat(v, u)[1];
 //        *iter_z = mat(v, u)[2];
-
-         *iter_x = mat(v, u)[2];
-         *iter_y = -mat(v, u)[0];
-         *iter_z = -mat(v, u)[1];
-      }
-      else
-      {
-        *iter_x = *iter_y = *iter_z = bad_point;
-      }
-    }
-  }
-
+//        */
+////    /**/
+//          *iter_x = mat(v, u)[2];
+//          *iter_y = -mat(v, u)[0];
+//          *iter_z = -mat(v, u)[1];
+//    /**/
+//
+//      }
+//      else
+//      {
+//        *iter_x = *iter_y = *iter_z = bad_point;
+//  //bad_cnt++;
+//      }
+//    }
+//  }
+  //ROS_INFO("USS: In converter bad_cnt= %d", bad_cnt);
+  
   // Fill in color
+ 
   namespace enc = sensor_msgs::image_encodings;
   const std::string& encoding = l_image_msg->encoding;
   if (encoding == enc::MONO8)
