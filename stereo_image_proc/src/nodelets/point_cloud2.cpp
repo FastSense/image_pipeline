@@ -197,7 +197,7 @@ void PointCloud2Nodelet::imageCb(const ImageConstPtr& l_image_msg,
     {
         for (int u = 0; u < mat.cols; ++u, ++iter_x, ++iter_y, ++iter_z)
         {
-            if ((isValidPoint(mat(v,u)))&&(!(v%8))&&(!(u%8)))
+            if ((isValidPoint(mat(v,u)))&&(!(v%4))&&(!(u%4)))
             {
                 *iter_x = mat(v, u)[2];
                 *iter_y = -mat(v, u)[0];
