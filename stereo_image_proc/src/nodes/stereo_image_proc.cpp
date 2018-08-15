@@ -119,21 +119,26 @@ int main(int argc, char **argv)
   if (private_nh.getParam("approximate_sync", approx_sync))
     shared_params["approximate_sync"] = XmlRpc::XmlRpcValue(approx_sync);
 
-  // Disparity nodelet
-  // Inputs: left/image_rect, left/camera_info, right/image_rect, right/camera_info
-  // Outputs: disparity
-  // NOTE: Using node name for the disparity nodelet because it is the only one using
-  // dynamic_reconfigure so far, and this makes us backwards-compatible with cturtle.
-  std::string disparity_name = ros::this_node::getName();
-  manager.load(disparity_name, "stereo_image_proc/disparity", remappings, my_argv);
+  bool use_disparity = true; 
+  private_nh.param("use_disparity", use_disparity, true);
 
-  // PointCloud2 nodelet
-  // Inputs: left/image_rect_color, left/camera_info, right/camera_info, disparity
-  // Outputs: points2
-  std::string point_cloud2_name = ros::this_node::getName() + "_point_cloud2";
-  if (shared_params.valid())
-    ros::param::set(point_cloud2_name, shared_params);
-  manager.load(point_cloud2_name, "stereo_image_proc/point_cloud2", remappings, my_argv);
+  if (use_disparity) {
+    // Disparity nodelet
+    // Inputs: left/image_rect, left/camera_info, right/image_rect, right/camera_info
+    // Outputs: disparity
+    // NOTE: Using node name for the disparity nodelet because it is the only one using
+    // dynamic_reconfigure so far, and this makes us backwards-compatible with cturtle.
+    std::string disparity_name = ros::this_node::getName();
+    manager.load(disparity_name, "stereo_image_proc/disparity", remappings, my_argv);
+
+    // PointCloud2 nodelet
+    // Inputs: left/image_rect_color, left/camera_info, right/camera_info, disparity
+    // Outputs: points2
+    std::string point_cloud2_name = ros::this_node::getName() + "_point_cloud2";
+    if (shared_params.valid())
+      ros::param::set(point_cloud2_name, shared_params);
+    manager.load(point_cloud2_name, "stereo_image_proc/point_cloud2", remappings, my_argv);
+  }
 
   // Check for only the original camera topics
   ros::V_string topics;
